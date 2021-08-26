@@ -2,12 +2,12 @@ proxy_server:
   user: "hello"
   password: "world"
 admin_server:
-  addr: "0.0.0.0:6002"
+  addr: "10.38.161.47:6002"
   user: "test"
   password: "test"
 config_etcd:
   addrs:
-    - "http://127.0.0.1:2379"
+    - "http://10.38.161.47:2378"
   base_path: "weir"
   username: "root"
   password: "root"

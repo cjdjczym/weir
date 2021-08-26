@@ -21,8 +21,8 @@ config_center:
   type: "etcd"
   config_etcd:
     addrs:
-    - "127.0.0.1:2379"
-    base_path: "/weir/defaultcluster"
+    - "10.38.161.47:2379"
+    base_path: "weir"
     username: ""
     password: ""
     strict_parse: false
