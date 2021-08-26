@@ -4,13 +4,13 @@ import (
 	"hash/crc32"
 	"time"
 
+	"github.com/pingcap/errors"
+	"github.com/pingcap/parser"
 	"github.com/tidb-incubator/weir/pkg/config"
 	"github.com/tidb-incubator/weir/pkg/proxy/backend"
 	"github.com/tidb-incubator/weir/pkg/proxy/driver"
 	wast "github.com/tidb-incubator/weir/pkg/util/ast"
 	"github.com/tidb-incubator/weir/pkg/util/datastructure"
-	"github.com/pingcap/errors"
-	"github.com/pingcap/parser"
 )
 
 type NamespaceImpl struct {
@@ -82,6 +82,9 @@ func BuildFrontend(cfg *config.FrontendNamespace) (Frontend, error) {
 		allowedDBs: cfg.AllowedDBs,
 	}
 	fns.allowedDBSet = datastructure.StringSliceToSet(cfg.AllowedDBs)
+
+	// TODO cj feat[host]
+	fns.deniedHostSet = datastructure.StringSliceToSet(cfg.DeniedIPs)
 
 	userPasswds := make(map[string]string)
 	for _, u := range cfg.Users {

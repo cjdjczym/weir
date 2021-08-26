@@ -2,7 +2,7 @@ package passwd
 
 import "crypto/sha1"
 
-// calculatePassword calculate password hash
+// CalculatePassword calculate password hash
 func CalculatePassword(scramble, password []byte) []byte {
 	if len(password) == 0 {
 		return nil

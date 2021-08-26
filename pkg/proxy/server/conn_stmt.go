@@ -86,7 +86,8 @@ func (cc *clientConn) handleStmtExecute(ctx context.Context, data []byte) error 
 		return err
 	}
 
-	if ret != nil {
+	// TODO cj fix(add '.Resultset' here)
+	if ret.Resultset != nil {
 		err = cc.writeGoMySQLResultset(ctx, ret.Resultset, true, ret.Status, 0)
 	} else {
 		err = cc.writeOK()

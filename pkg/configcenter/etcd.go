@@ -2,13 +2,14 @@ package configcenter
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"path"
 	"time"
 
-	"github.com/tidb-incubator/weir/pkg/config"
 	"github.com/pingcap/errors"
 	"github.com/pingcap/tidb/util/logutil"
+	"github.com/tidb-incubator/weir/pkg/config"
 	"go.etcd.io/etcd/clientv3"
 	"go.etcd.io/etcd/mvcc/mvccpb"
 	"go.uber.org/zap"
@@ -17,6 +18,8 @@ import (
 const (
 	DefaultEtcdDialTimeout = 3 * time.Second
 )
+
+// TODO cj fix 以下皆有一定修改
 
 type EtcdConfigCenter struct {
 	etcdClient  *clientv3.Client
@@ -50,8 +53,8 @@ func NewEtcdConfigCenter(etcdClient *clientv3.Client, basePath string, strictPar
 	}
 }
 
-func (e *EtcdConfigCenter) get(ctx context.Context, key string) (*mvccpb.KeyValue, error) {
-	resp, err := e.kv.Get(ctx, getNamespacePath(e.basePath, key))
+func (e *EtcdConfigCenter) get(ctx context.Context, key string, cluster string) (*mvccpb.KeyValue, error) {
+	resp, err := e.kv.Get(ctx, path.Join(e.basePath, "namespace", cluster, key))
 	if err != nil {
 		return nil, err
 	}
@@ -61,35 +64,39 @@ func (e *EtcdConfigCenter) get(ctx context.Context, key string) (*mvccpb.KeyValu
 	return resp.Kvs[0], nil
 }
 
-func (e *EtcdConfigCenter) list(ctx context.Context) ([]*mvccpb.KeyValue, error) {
-	baseDir := appendSlashToDirPath(e.basePath)
-	resp, err := e.kv.Get(ctx, baseDir, clientv3.WithPrefix())
+// list the string subPath should be `namespace / proxy` + clusterName
+func (e *EtcdConfigCenter) list(ctx context.Context, subPath string) ([]*mvccpb.KeyValue, error) {
+	resp, err := e.kv.Get(ctx, path.Join(e.basePath, subPath), clientv3.WithPrefix())
 	if err != nil {
 		return nil, err
 	}
 	return resp.Kvs, nil
 }
 
-func (e *EtcdConfigCenter) GetNamespace(ns string) (*config.Namespace, error) {
+func (e *EtcdConfigCenter) GetNamespace(ns string, cluster string) (*config.Namespace, error) {
 	ctx := context.Background()
-	etcdKeyValue, err := e.get(ctx, ns)
+	etcdKeyValue, err := e.get(ctx, ns, cluster)
 	if err != nil {
 		return nil, err
 	}
-
-	return config.UnmarshalNamespaceConfig(etcdKeyValue.Value)
+	n := &config.Namespace{}
+	err = json.Unmarshal(etcdKeyValue.Value, n)
+	if err != nil {
+		return nil, err
+	}
+	return n, nil
 }
 
-func (e *EtcdConfigCenter) ListAllNamespace() ([]*config.Namespace, error) {
+func (e *EtcdConfigCenter) ListAllNamespace(cluster string) ([]*config.Namespace, error) {
 	ctx := context.Background()
-	etcdKeyValues, err := e.list(ctx)
+	etcdKeyValues, err := e.list(ctx, path.Join("namespace", cluster))
 	if err != nil {
 		return nil, err
 	}
-
 	var ret []*config.Namespace
 	for _, kv := range etcdKeyValues {
-		nsCfg, err := config.UnmarshalNamespaceConfig(kv.Value)
+		n := &config.Namespace{}
+		err = json.Unmarshal(kv.Value, n)
 		if err != nil {
 			if e.strictParse {
 				return nil, err
@@ -98,21 +105,50 @@ func (e *EtcdConfigCenter) ListAllNamespace() ([]*config.Namespace, error) {
 				continue
 			}
 		}
-		ret = append(ret, nsCfg)
+		ret = append(ret, n)
 	}
-
 	return ret, nil
 }
 
-func (e *EtcdConfigCenter) SetNamespace(ns string, value string) error {
+func (e *EtcdConfigCenter) ListAllNamespaceStringArray(cluster string) ([]string, error) {
 	ctx := context.Background()
-	_, err := e.kv.Put(ctx, ns, value)
+	etcdKeyValues, err := e.list(ctx, path.Join("namespace", cluster))
+	if err != nil {
+		return nil, err
+	}
+	var files []string
+	for _, kv := range etcdKeyValues {
+		files = append(files, string(kv.Value))
+	}
+	return files, nil
+}
+
+func (e *EtcdConfigCenter) ListProxyMonitorMetrics(cluster string) (map[string]*config.ProxyMonitorMetric, error) {
+	ctx := context.Background()
+	etcdKeyValues, err := e.list(ctx, path.Join("proxy", cluster))
+	if err != nil {
+		return nil, err
+	}
+	proxy := make(map[string]*config.ProxyMonitorMetric)
+	for _, kv := range etcdKeyValues {
+		p := &config.ProxyMonitorMetric{}
+		if err := json.Unmarshal(kv.Value, &p); err != nil {
+			return nil, err
+		}
+		proxy[p.Token] = p
+	}
+	return proxy, nil
+}
+
+func (e *EtcdConfigCenter) SetNamespace(ns string, value string, cluster string) error {
+	ctx := context.Background()
+	_, err := e.kv.Put(ctx, path.Join(e.basePath, "namespace", cluster, ns), value)
 	return err
 }
 
-func (e *EtcdConfigCenter) DelNamespace(ns string) error {
+func (e *EtcdConfigCenter) DelNamespace(ns string, cluster string) error {
 	ctx := context.Background()
-	_, err := e.kv.Delete(ctx, ns)
+	_, err := e.kv.Delete(ctx, path.Join(e.basePath, "namespace", cluster, ns))
 	return err
 }
 
@@ -120,19 +156,4 @@ func (e *EtcdConfigCenter) Close() {
 	if err := e.etcdClient.Close(); err != nil {
 		logutil.BgLogger().Error("close etcd client error", zap.Error(err))
 	}
-}
-
-func getNamespacePath(basePath, ns string) string {
-	return path.Join(basePath, ns)
-}
-
-// avoid base dir path prefix equal
-func appendSlashToDirPath(dir string) string {
-	if len(dir) == 0 {
-		return ""
-	}
-	if dir[len(dir)-1] == '/' {
-		return dir
-	}
-	return dir + "/"
 }

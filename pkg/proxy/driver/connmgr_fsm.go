@@ -4,23 +4,23 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	"github.com/pingcap/tidb/util/logutil"
 	"github.com/siddontang/go-mysql/mysql"
+	"go.uber.org/zap"
 )
 
 type FSMState int
 type FSMEvent int
 
 const (
-	State0 FSMState = 0x00
-	State1 FSMState = 0x01
-	State2 FSMState = 0x02
-	State3 FSMState = 0x03
-	State4 FSMState = 0x04
-	State5 FSMState = 0x05
-	State6 FSMState = 0x06
-	State7 FSMState = 0x07
+	State0 FSMState = 0x00 //             |            |
+	State1 FSMState = 0x01 // Transaction |            |
+	State2 FSMState = 0x02 //   		  | AutoCommit |
+	State3 FSMState = 0x03 // Transaction | AutoCommit |
+	State4 FSMState = 0x04 //             |            | Prepare
+	State5 FSMState = 0x05 // Transaction |            | Prepare
+	State6 FSMState = 0x06 //             | AutoCommit | Prepare
+	State7 FSMState = 0x07 // Transaction | AutoCommit | Prepare
 
 	StateUnknown FSMState = -1
 )
@@ -205,6 +205,9 @@ func (q *FSM) MustRegisterHandler(state FSMState, newState FSMState, event FSMEv
 
 func (q *FSM) Call(ctx context.Context, event FSMEvent, conn *BackendConnManager, args ...interface{}) (interface{}, error) {
 	action, ok := q.getHandler(conn.state, event)
+	// TODO cj log
+	logutil.Logger(ctx).Info("new call", zap.Any("sql", args), zap.Any("now", conn.state), zap.Any("next", action.NewState))
+
 	if !ok {
 		return nil, fmt.Errorf("fsm handler not found")
 	}
@@ -212,6 +215,9 @@ func (q *FSM) Call(ctx context.Context, event FSMEvent, conn *BackendConnManager
 	if action.MustChangeState || err == nil {
 		conn.state = action.NewState
 	}
+
+	logutil.Logger(ctx).Info("new ret", zap.Any("sql", args), zap.Any("ret", ret))
+
 	return ret, err
 }
 
@@ -261,6 +267,7 @@ func fsmHandler_WithAttachedConn_EventEnableAutoCommit(b *BackendConnManager, ct
 func fsmHandler_ConnPool_EventQuery(b *BackendConnManager, ctx context.Context, args ...interface{}) (*mysql.Result, error) {
 	db := args[0].(string)
 	sql := args[1].(string)
+
 	return b.queryWithoutTxn(ctx, db, sql)
 }
 
@@ -340,13 +347,11 @@ func fsmHandler_NoPrepare_PreFetchConn_EventStmtPrepare(b *BackendConnManager, c
 		errClosePooledBackendConn(conn, b.ns.Name())
 		return nil, err
 	}
-
 	stmt, err := conn.StmtPrepare(sql)
 	if err != nil {
 		errClosePooledBackendConn(conn, b.ns.Name())
 		return nil, err
 	}
-
 	b.setAttachedConn(conn)
 	b.isPrepared = true
 	return stmt, nil

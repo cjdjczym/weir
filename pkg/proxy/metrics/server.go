@@ -44,7 +44,7 @@ var (
 
 	EventStart        = "start"
 	EventGracefulDown = "graceful_shutdown"
-	// Eventkill occurs when the server.Kill() function is called.
+	// EventKill occurs when the server.Kill() function is called.
 	EventKill  = "kill"
 	EventClose = "close"
 )

@@ -16,6 +16,8 @@ type Namespace interface {
 	ListDatabases() []string
 	IsDeniedSQL(sqlFeature uint32) bool
 	IsAllowedSQL(sqlFeature uint32) bool
+	// IsDeniedHost TODO cj feat[host]
+	IsDeniedHost(host string) bool
 	GetPooledConn(context.Context) (PooledBackendConn, error)
 	IncrConnCount()
 	DescConnCount()

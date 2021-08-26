@@ -15,6 +15,7 @@ package server
 
 import (
 	"context"
+	"encoding/hex"
 	"io"
 	"runtime/pprof"
 	"strings"
@@ -42,7 +43,9 @@ func (cc *clientConn) dispatch(ctx context.Context, data []byte) error {
 	t := time.Now()
 	cc.lastPacket = data
 	cmd := data[0]
+
 	data = data[1:]
+
 	if variable.EnablePProfSQLCPU.Load() {
 		label := getLastStmtInConn{cc}.PProfLabel()
 		if len(label) > 0 {
@@ -143,6 +146,11 @@ func (cc *clientConn) useDB(ctx context.Context, db string) (err error) {
 // Query `load stats` does not return result either.
 func (cc *clientConn) handleQuery(ctx context.Context, sql string) (err error) {
 	rss, err := cc.ctx.Execute(ctx, sql)
+
+	if rss != nil && rss.Resultset != nil && rss.Resultset.RawPkg != nil{
+		println(hex.EncodeToString(rss.Resultset.RawPkg))
+	}
+
 	if err != nil {
 		metrics.ExecuteErrorCounter.WithLabelValues(metrics.ExecuteErrorToLabel(err)).Inc()
 		return err

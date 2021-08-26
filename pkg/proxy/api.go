@@ -6,12 +6,12 @@ import (
 	"net/http/pprof"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pingcap/tidb/util/logutil"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/tidb-incubator/weir/pkg/config"
 	"github.com/tidb-incubator/weir/pkg/configcenter"
 	"github.com/tidb-incubator/weir/pkg/proxy/namespace"
 	"github.com/tidb-incubator/weir/pkg/proxy/server"
-	"github.com/pingcap/tidb/util/logutil"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 )
 
@@ -31,9 +31,12 @@ type HttpApiServer struct {
 	engine *gin.Engine
 }
 
+// TODO cj add cluster field
+
 type NamespaceHttpHandler struct {
 	nsmgr     *namespace.NamespaceManager
 	cfgCenter configcenter.ConfigCenter
+	cluster   string
 }
 
 type CommonJsonResp struct {
@@ -41,10 +44,11 @@ type CommonJsonResp struct {
 	Msg  string `json:"msg"`
 }
 
-func NewNamespaceHttpHandler(nsmgr *namespace.NamespaceManager, cfgCenter configcenter.ConfigCenter) *NamespaceHttpHandler {
+func NewNamespaceHttpHandler(nsmgr *namespace.NamespaceManager, cfgCenter configcenter.ConfigCenter, cluster string) *NamespaceHttpHandler {
 	return &NamespaceHttpHandler{
 		nsmgr:     nsmgr,
 		cfgCenter: cfgCenter,
+		cluster:   cluster,
 	}
 }
 
@@ -70,7 +74,7 @@ func CreateHttpApiServer(proxyServer *server.Server, nsmgr *namespace.NamespaceM
 
 	namespaceRouteGroup := engine.Group("/admin/namespace")
 	apiServer.wrapBasicAuthGinMiddleware(namespaceRouteGroup)
-	namespaceHttpHandler := NewNamespaceHttpHandler(apiServer.nsmgr, apiServer.cfgCenter)
+	namespaceHttpHandler := NewNamespaceHttpHandler(apiServer.nsmgr, apiServer.cfgCenter, cfg.Cluster)
 	namespaceHttpHandler.AddHandlersToRouteGroup(namespaceRouteGroup)
 
 	metricsRouteGroup := engine.Group("/metrics")
@@ -127,10 +131,12 @@ func (h *HttpApiServer) Close() {
 	close(h.closeCh)
 }
 
+// TODO cj add PING
 func (n *NamespaceHttpHandler) AddHandlersToRouteGroup(group *gin.RouterGroup) {
 	group.POST("/remove/:namespace", n.HandleRemoveNamespace)
 	group.POST("/reload/prepare/:namespace", n.HandlePrepareReload)
 	group.POST("/reload/commit/:namespace", n.HandleCommitReload)
+	group.GET("/ping", n.ping)
 }
 
 func (n *NamespaceHttpHandler) HandleRemoveNamespace(c *gin.Context) {
@@ -153,7 +159,7 @@ func (n *NamespaceHttpHandler) HandlePrepareReload(c *gin.Context) {
 		return
 	}
 
-	nscfg, err := n.cfgCenter.GetNamespace(ns)
+	nscfg, err := n.cfgCenter.GetNamespace(ns, n.cluster)
 	if err != nil {
 		errMsg := "get namespace value from configcenter error"
 		logutil.BgLogger().Error(errMsg, zap.Error(err))
@@ -186,6 +192,10 @@ func (n *NamespaceHttpHandler) HandleCommitReload(c *gin.Context) {
 	}
 
 	logutil.BgLogger().Info("commit reload success", zap.String("namespace", ns))
+	c.JSON(http.StatusOK, CreateSuccessJsonResp())
+}
+
+func (s *NamespaceHttpHandler) ping(c *gin.Context) {
 	c.JSON(http.StatusOK, CreateSuccessJsonResp())
 }
 

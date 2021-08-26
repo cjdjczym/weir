@@ -13,6 +13,34 @@ type MockNamespace struct {
 	mock.Mock
 }
 
+func (_m *MockNamespace) IsDeniedSQL(sqlFeature uint32) bool {
+	panic("implement me")
+}
+
+func (_m *MockNamespace) IsAllowedSQL(sqlFeature uint32) bool {
+	panic("implement me")
+}
+
+func (_m *MockNamespace) IsDeniedHost(host string) bool {
+	panic("implement me")
+}
+
+func (_m *MockNamespace) IncrConnCount() {
+	panic("implement me")
+}
+
+func (_m *MockNamespace) DescConnCount() {
+	panic("implement me")
+}
+
+func (_m *MockNamespace) GetBreaker() (Breaker, error) {
+	panic("implement me")
+}
+
+func (_m *MockNamespace) GetRateLimiter() RateLimiter {
+	panic("implement me")
+}
+
 // GetPooledConn provides a mock function with given fields: _a0
 func (_m *MockNamespace) GetPooledConn(_a0 context.Context) (PooledBackendConn, error) {
 	ret := _m.Called(_a0)

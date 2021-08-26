@@ -5,11 +5,11 @@ import (
 	"database/sql/driver"
 	"sync"
 
-	"github.com/tidb-incubator/weir/pkg/proxy/metrics"
-	utilerrors "github.com/tidb-incubator/weir/pkg/util/errors"
 	"github.com/pingcap/parser/mysql"
 	"github.com/pingcap/tidb/util/logutil"
 	gomysql "github.com/siddontang/go-mysql/mysql"
+	"github.com/tidb-incubator/weir/pkg/proxy/metrics"
+	utilerrors "github.com/tidb-incubator/weir/pkg/util/errors"
 	"go.uber.org/zap"
 )
 
@@ -130,6 +130,7 @@ func (f *BackendConnManager) Close() error {
 }
 
 func (f *BackendConnManager) queryWithoutTxn(ctx context.Context, db, sql string) (*gomysql.Result, error) {
+
 	var err error
 	conn, err := f.ns.GetPooledConn(ctx)
 	if err != nil {
@@ -141,7 +142,7 @@ func (f *BackendConnManager) queryWithoutTxn(ctx context.Context, db, sql string
 			if errClose := conn.ErrorClose(); errClose != nil {
 				logutil.BgLogger().Error("close backend conn error", zap.Error(errClose))
 			}
-		} else {
+		} else if f.txnConn == nil{
 			conn.PutBack()
 		}
 	}()

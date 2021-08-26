@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"sync/atomic"
 
+	"github.com/pingcap/errors"
 	"github.com/tidb-incubator/weir/pkg/config"
 	"github.com/tidb-incubator/weir/pkg/proxy/driver"
 	"github.com/tidb-incubator/weir/pkg/proxy/metrics"
-	"github.com/pingcap/errors"
 )
 
 type NamespaceHolder struct {
@@ -79,6 +79,11 @@ func (n *NamespaceWrapper) IsDeniedSQL(sqlFeature uint32) bool {
 
 func (n *NamespaceWrapper) IsAllowedSQL(sqlFeature uint32) bool {
 	return n.mustGetCurrentNamespace().IsAllowedSQL(sqlFeature)
+}
+
+// IsDeniedHost TODO cj feat[host]
+func (n *NamespaceWrapper) IsDeniedHost(host string) bool {
+	return n.mustGetCurrentNamespace().IsDeniedHost(host)
 }
 
 func (n *NamespaceWrapper) GetPooledConn(ctx context.Context) (driver.PooledBackendConn, error) {

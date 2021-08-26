@@ -6,7 +6,7 @@ import (
 	gomysql "github.com/siddontang/go-mysql/mysql"
 )
 
-// copied from errors.Is(), but replace Unwrap() with Cause()
+// Is copied from errors.Is(), but replace Unwrap() with Cause()
 func Is(err, target error) bool {
 	if target == nil {
 		return err == target

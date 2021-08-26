@@ -5,6 +5,7 @@ import (
 
 	"github.com/pingcap/parser"
 	"github.com/stretchr/testify/assert"
+	"github.com/tidb-incubator/weir/pkg/util/ast"
 )
 
 func TestFirstTableNameVisitor_TableName(t *testing.T) {
@@ -24,7 +25,7 @@ func TestFirstTableNameVisitor_TableName(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.sql, func(t *testing.T) {
 			stmt, err := parser.New().ParseOneStmt(tt.sql, "", "")
-			f := &FirstTableNameVisitor{}
+			f := &ast.FirstTableNameVisitor{}
 			stmt.Accept(f)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.want, f.TableName())

@@ -1,0 +1,14 @@
+proxy_server:
+  user: "hello"
+  password: "world"
+admin_server:
+  addr: "0.0.0.0:6002"
+  user: "test"
+  password: "test"
+config_etcd:
+  addrs:
+    - "http://127.0.0.1:2379"
+  base_path: "weir"
+  username: "root"
+  password: "root"
+  strict_parse: false

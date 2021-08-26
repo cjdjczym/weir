@@ -167,7 +167,7 @@ func (cb *CircuitBreaker) Status() int32 {
 	return status
 }
 
-var ErrCircuitBreak error = errors.New("circuit breaker triggered")
+var ErrCircuitBreak = errors.New("circuit breaker triggered")
 
 type runFunc func(context.Context) error
 type fallbackFunc func(context.Context, error) error
@@ -226,7 +226,7 @@ const (
 	FailureHit = "failure"
 )
 
-// 根据请求的成败，驱动 CircuitBreaker 状态迁移。
+// Hit 根据请求的成败，驱动 CircuitBreaker 状态迁移。
 func (cb *CircuitBreaker) Hit(nowMs int64, isProbe bool, isFailureHit bool) {
 	status := cb.Status()
 	cb.mu.Lock()
@@ -243,6 +243,7 @@ func (cb *CircuitBreaker) Hit(nowMs int64, isProbe bool, isFailureHit bool) {
 		if isFailureHit {
 			statusCouldChange := false
 
+			// 采用failureNum来判断
 			if cb.config.failureNum != 0 {
 				nowHitsStat := cb.sw.GetNowHits(nowMs, TotalHit, FailureHit)
 				failureHits := nowHitsStat[FailureHit]
@@ -250,7 +251,7 @@ func (cb *CircuitBreaker) Hit(nowMs int64, isProbe bool, isFailureHit bool) {
 				if failureHits > cb.config.failureNum && (totalHits > cb.config.minQPS) {
 					statusCouldChange = true
 				}
-			} else {
+			} else { // 采用failureRate来判断
 				hitsStat := cb.sw.GetHits(nowMs, TotalHit, FailureHit)
 				failureHits := hitsStat[FailureHit]
 				totalHits := hitsStat[TotalHit]

@@ -25,3 +25,11 @@ func UnmarshalProxyConfig(data []byte) (*Proxy, error) {
 func MarshalProxyConfig(cfg *Proxy) ([]byte, error) {
 	return yaml.Marshal(cfg)
 }
+
+func UnmarshalCCConfig(data []byte) (*CCConfig, error) {
+	var cc CCConfig
+	if err := yaml.Unmarshal(data, &cc); err != nil {
+		return nil, err
+	}
+	return &cc, nil
+}

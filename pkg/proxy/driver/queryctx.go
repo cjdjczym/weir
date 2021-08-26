@@ -6,9 +6,6 @@ import (
 	"hash/crc32"
 	"time"
 
-	"github.com/tidb-incubator/weir/pkg/proxy/server"
-	wast "github.com/tidb-incubator/weir/pkg/util/ast"
-	cb "github.com/tidb-incubator/weir/pkg/util/rate_limit_breaker/circuit_breaker"
 	"github.com/pingcap/parser"
 	"github.com/pingcap/parser/ast"
 	"github.com/pingcap/parser/auth"
@@ -16,6 +13,9 @@ import (
 	"github.com/pingcap/tidb/sessionctx/variable"
 	"github.com/pingcap/tidb/util"
 	gomysql "github.com/siddontang/go-mysql/mysql"
+	"github.com/tidb-incubator/weir/pkg/proxy/server"
+	wast "github.com/tidb-incubator/weir/pkg/util/ast"
+	cb "github.com/tidb-incubator/weir/pkg/util/rate_limit_breaker/circuit_breaker"
 )
 
 // Server information.
@@ -135,6 +135,7 @@ func (q *QueryCtxImpl) Execute(ctx context.Context, sql string) (*gomysql.Result
 
 	if rateLimitKey, ok := q.getRateLimiterKey(ctx, q.ns.GetRateLimiter()); ok && rateLimitKey != "" {
 		if err := q.ns.GetRateLimiter().Limit(ctx, rateLimitKey); err != nil {
+			// TODO cj feat[log for limiter]
 			return nil, err
 		}
 	}
@@ -250,7 +251,8 @@ func (q *QueryCtxImpl) Close() error {
 
 func (q *QueryCtxImpl) Auth(user *auth.UserIdentity, pwd []byte, salt []byte) bool {
 	ns, ok := q.nsmgr.Auth(user.Username, pwd, salt)
-	if !ok {
+	// TODO cj feat[host]
+	if !ok || ns.IsDeniedHost(user.Hostname){
 		return false
 	}
 	q.ns = ns

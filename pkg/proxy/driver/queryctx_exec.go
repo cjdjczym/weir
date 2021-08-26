@@ -5,14 +5,14 @@ import (
 	"hash/crc32"
 	"strings"
 
-	"github.com/tidb-incubator/weir/pkg/proxy/constant"
-	wast "github.com/tidb-incubator/weir/pkg/util/ast"
 	"github.com/pingcap/errors"
 	"github.com/pingcap/parser/ast"
 	"github.com/pingcap/parser/mysql"
 	"github.com/pingcap/tidb/sessionctx/variable"
 	"github.com/pingcap/tidb/util/logutil"
 	gomysql "github.com/siddontang/go-mysql/mysql"
+	"github.com/tidb-incubator/weir/pkg/proxy/constant"
+	wast "github.com/tidb-incubator/weir/pkg/util/ast"
 	"go.uber.org/zap"
 )
 
@@ -170,15 +170,16 @@ func (q *QueryCtxImpl) setVariable(ctx context.Context, stmt *ast.SetStmt) error
 	var autoCommitVar *ast.VariableAssignment
 	var sysVars []*ast.VariableAssignment
 
+	// TODO cj fix(取消default注释)
 	for _, v := range stmt.Variables {
 		switch strings.ToLower(v.Name) {
 		case variable.AutoCommit:
 			autoCommitVar = v
-			//default:
-			//	if v.IsGlobal {
-			//		return errors.Errorf("cannot set variable in global scope")
-			//	}
-			//	sysVars = append(sysVars, v)
+		default:
+			if v.IsGlobal {
+				return errors.Errorf("cannot set variable in global scope")
+			}
+			sysVars = append(sysVars, v)
 		}
 	}
 

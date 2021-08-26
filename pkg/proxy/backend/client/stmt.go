@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/tidb-incubator/weir/pkg/proxy/driver"
 	"github.com/pingcap/errors"
 	. "github.com/siddontang/go-mysql/mysql"
+	"github.com/tidb-incubator/weir/pkg/proxy/driver"
 )
 
 type Stmt struct {
@@ -175,6 +175,7 @@ func (c *Conn) Prepare(query string) (*Stmt, error) {
 	}
 
 	data, err := c.ReadPacket()
+
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -234,7 +235,9 @@ func (c *Conn) StmtExecuteForward(data []byte) (*Result, error) {
 	writeData = append(writeData, COM_STMT_EXECUTE)
 	writeData = append(writeData, data...)
 	c.ResetSequence()
-	if err := c.WritePacket(data); err != nil {
+
+	// TODO cj fix(replace 'data' with 'writeData')
+	if err := c.WritePacket(writeData); err != nil {
 		return nil, errors.Trace(err)
 	}
 	return c.readResult(true)

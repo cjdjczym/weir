@@ -224,7 +224,7 @@ func (this *BreakerManager) CASHalfOpenProbeSent(name string, idx int, halfOpenP
 func (this *BreakerManager) AddTimeWheelTask(name string, connectionID uint64, flag *int32) error {
 	for idx, strategy := range this.strategies {
 		hitNum := idx
-		if err := this.tw.Add(strategy.sqlTimeoutMsDuration, uint64(connectionID)*this.hashFactor+uint64(hitNum), func() {
+		if err := this.tw.Add(strategy.sqlTimeoutMsDuration, connectionID*this.hashFactor+uint64(hitNum), func() {
 			atomic.AddInt32(flag, 1)
 			this.Hit(name, hitNum, true)
 		}); err != nil {

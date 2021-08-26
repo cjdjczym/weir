@@ -25,8 +25,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/tidb-incubator/weir/pkg/proxy/metrics"
-	utilerrors "github.com/tidb-incubator/weir/pkg/util/errors"
 	"github.com/pingcap/errors"
 	"github.com/pingcap/parser/mysql"
 	"github.com/pingcap/parser/terror"
@@ -34,6 +32,8 @@ import (
 	"github.com/pingcap/tidb/util/arena"
 	"github.com/pingcap/tidb/util/logutil"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/tidb-incubator/weir/pkg/proxy/metrics"
+	utilerrors "github.com/tidb-incubator/weir/pkg/util/errors"
 	"go.uber.org/zap"
 )
 
@@ -120,9 +120,11 @@ func (cc *clientConn) Run(ctx context.Context) {
 			buf = buf[:stackSize]
 			logutil.Logger(ctx).Error("connection running loop panic",
 				zap.Stringer("lastSQL", getLastStmtInConn{cc}),
-				zap.String("err", fmt.Sprintf("%v", r)),
-				zap.String("stack", string(buf)),
-			)
+				zap.String("err", fmt.Sprintf("%v", r)))
+			// TODO cj log
+			println("============stack by cjdj============")
+			println(string(buf))
+			println("=====================================")
 			err := cc.writeError(errors.New(fmt.Sprintf("%v", r)))
 			terror.Log(err)
 			metrics.PanicCounter.WithLabelValues(metrics.LabelSession).Inc()

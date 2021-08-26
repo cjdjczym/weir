@@ -15,6 +15,13 @@ else
 	go build -gcflags '$(GCFLAGS)' -ldflags '$(LDFLAGS)' -tags '${BUILD_TAGS}' -o bin/weirproxy cmd/weirproxy/main.go
 endif
 
+weirproxy-cc:
+ifeq ("$(WITH_RACE)", "1")
+	go build -race -gcflags '$(GCFLAGS)' -ldflags '$(LDFLAGS)' -tags '${BUILD_TAGS}' -o bin/weirproxy-cc cmd/weirproxy-cc/main.go
+else
+	go build -gcflags '$(GCFLAGS)' -ldflags '$(LDFLAGS)' -tags '${BUILD_TAGS}' -o bin/weirproxy-cc cmd/weirproxy-cc/main.go
+endif
+
 go-test:
 	go test -coverprofile=.coverage.out ./...
 	go tool cover -func=.coverage.out -o .coverage.func

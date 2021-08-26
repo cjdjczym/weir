@@ -67,6 +67,7 @@ func (sw *SlidingWindow) cellStartMs(nowMs int64) int64 {
 	return nowMs - nowMs%sw.CellIntervalMs
 }
 
+// GetHits 采用failureRate来判断
 func (sw *SlidingWindow) GetHits(nowMs int64, metricNames ...string) map[string]int64 {
 	windowStart := nowMs - sw.Size*sw.CellIntervalMs
 	stats := map[string]int64{}
@@ -81,6 +82,7 @@ func (sw *SlidingWindow) GetHits(nowMs int64, metricNames ...string) map[string]
 	return stats
 }
 
+// GetNowHits 采用failureNum来判断
 func (sw *SlidingWindow) GetNowHits(nowMs int64, metricNames ...string) map[string]int64 {
 	cell := sw.getCell(nowMs)
 	stats := map[string]int64{}
@@ -100,7 +102,7 @@ func (sw *SlidingWindow) GetActualDurationMs(nowMs int64) int64 {
 	return actualDurationMs
 }
 
-// timestamp in ms
+// GetNowMs return timestamp in ms
 func GetNowMs() int64 {
 	return time.Now().UnixNano() / int64(time.Millisecond)
 }

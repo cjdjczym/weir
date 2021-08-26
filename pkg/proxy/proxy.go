@@ -43,7 +43,7 @@ func (p *Proxy) Init() error {
 	}
 	p.configCenter = cc
 
-	nss, err := cc.ListAllNamespace()
+	nss, err := cc.ListAllNamespace(p.cfg.Cluster)
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func (p *Proxy) Init() error {
 	return nil
 }
 
-// TODO(eastfisher): refactor this function
+// Run TODO(eastfisher): refactor this function
 func (p *Proxy) Run() error {
 	go func() {
 		time.Sleep(200 * time.Millisecond)

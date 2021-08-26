@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tidb-incubator/weir/pkg/proxy/backend"
 	"github.com/stretchr/testify/require"
+	"github.com/tidb-incubator/weir/pkg/proxy/backend"
 )
 
 func TestConnPool_ErrorClose_Success(t *testing.T) {

@@ -1,8 +1,8 @@
 package configcenter
 
 import (
-	"github.com/tidb-incubator/weir/pkg/config"
 	"github.com/pingcap/errors"
+	"github.com/tidb-incubator/weir/pkg/config"
 	"io/ioutil"
 	"path"
 	"path/filepath"
@@ -68,7 +68,7 @@ func listAllYamlFiles(dir string) ([]string, error) {
 	return ret, nil
 }
 
-func (f *FileConfigCenter) GetNamespace(ns string) (*config.Namespace, error) {
+func (f *FileConfigCenter) GetNamespace(ns string, cluster string) (*config.Namespace, error) {
 	cfg, ok := f.cfgs[ns]
 	if !ok {
 		return nil, ErrNamespaceNotFound
@@ -76,7 +76,7 @@ func (f *FileConfigCenter) GetNamespace(ns string) (*config.Namespace, error) {
 	return cfg, nil
 }
 
-func (f *FileConfigCenter) ListAllNamespace() ([]*config.Namespace, error) {
+func (f *FileConfigCenter) ListAllNamespace(cluster string) ([]*config.Namespace, error) {
 	var ret []*config.Namespace
 	for _, cfg := range f.cfgs {
 		ret = append(ret, cfg)

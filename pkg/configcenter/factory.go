@@ -1,8 +1,8 @@
 package configcenter
 
 import (
-	"github.com/tidb-incubator/weir/pkg/config"
 	"github.com/pingcap/errors"
+	"github.com/tidb-incubator/weir/pkg/config"
 )
 
 const (
@@ -11,8 +11,8 @@ const (
 )
 
 type ConfigCenter interface {
-	GetNamespace(ns string) (*config.Namespace, error)
-	ListAllNamespace() ([]*config.Namespace, error)
+	GetNamespace(ns string, cluster string) (*config.Namespace, error)
+	ListAllNamespace(cluster string) ([]*config.Namespace, error)
 }
 
 func CreateConfigCenter(cfg config.ConfigCenter) (ConfigCenter, error) {
