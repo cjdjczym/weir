@@ -49,7 +49,7 @@ func GetStats(p *config.ProxyMonitorMetric, cfg *config.CCConfig, timeout time.D
 }
 
 func pingCheck(host, user, password string) error {
-	URL := EncodeURL(host, "/api/namespace/ping")
+	URL := EncodeURL(host, "namespace/ping")
 	if _, err := requests.SendGet(URL, user, password); err != nil {
 		logutil.BgLogger().Fatal("call rpc xping to proxy failed")
 		return err
@@ -63,7 +63,7 @@ func PrepareConfig(host, name string, cfg *config.CCConfig) error {
 	if err != nil {
 		return err
 	}
-	URL := EncodeURL(host, "api/namespace/reload/prepare/%s", name)
+	URL := EncodeURL(host, "namespace/reload/prepare/%s", name)
 	err = requests.SendPut(URL, cfg.CCProxyServer.User, cfg.CCProxyServer.Password)
 	if err != nil {
 		logutil.BgLogger().Fatal("prepare proxy config failed", zap.Error(err))
@@ -78,7 +78,7 @@ func CommitConfig(host, name string, cfg *config.CCConfig) error {
 	if err != nil {
 		return err
 	}
-	URL := EncodeURL(host, "api/namespace/reload/commit/%s", name)
+	URL := EncodeURL(host, "namespace/reload/commit/%s", name)
 	err = requests.SendPut(URL, cfg.CCProxyServer.User, cfg.CCProxyServer.Password)
 	if err != nil {
 		logutil.BgLogger().Fatal("commit proxy config failed", zap.Error(err))
@@ -93,7 +93,7 @@ func DelNamespace(host, name string, cfg *config.CCConfig) error {
 	if err != nil {
 		return err
 	}
-	URL := EncodeURL(host, "api/namespace/remove/%s", name)
+	URL := EncodeURL(host, "namespace/remove/%s", name)
 	err = requests.SendPut(URL, cfg.CCProxyServer.User, cfg.CCProxyServer.Password)
 	if err != nil {
 		logutil.BgLogger().Warn("delete namespace in proxy failed", zap.String("name", name), zap.String("host", host), zap.Error(err))

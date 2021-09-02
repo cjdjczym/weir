@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/pingcap/tidb/util/logutil"
 	"github.com/siddontang/go-mysql/mysql"
-	"go.uber.org/zap"
 )
 
 type FSMState int
@@ -205,9 +204,6 @@ func (q *FSM) MustRegisterHandler(state FSMState, newState FSMState, event FSMEv
 
 func (q *FSM) Call(ctx context.Context, event FSMEvent, conn *BackendConnManager, args ...interface{}) (interface{}, error) {
 	action, ok := q.getHandler(conn.state, event)
-	// TODO cj log
-	logutil.Logger(ctx).Info("new call", zap.Any("sql", args), zap.Any("now", conn.state), zap.Any("next", action.NewState))
-
 	if !ok {
 		return nil, fmt.Errorf("fsm handler not found")
 	}
@@ -215,9 +211,6 @@ func (q *FSM) Call(ctx context.Context, event FSMEvent, conn *BackendConnManager
 	if action.MustChangeState || err == nil {
 		conn.state = action.NewState
 	}
-
-	logutil.Logger(ctx).Info("new ret", zap.Any("sql", args), zap.Any("ret", ret))
-
 	return ret, err
 }
 

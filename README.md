@@ -1,45 +1,32 @@
-# Weir
+# Weir修改文档
 
-Weir is a database proxy middleware platform, mainly providing traffic management for TiDB.
+> Weir原文档请看 [这里](README-EN.md)
 
-Weir is maintained by [伴鱼](https://www.ipalfish.com/) and [PingCAP](https://pingcap.com/).
+> cj文件夹里的内容是我在实习期间的一些笔记以及测试文件，可以作为参考
 
-[中文文档](README-CN.md)
+> 我在截止到2021-08-31的Weir最新版本的基础上修复了一些问题并添加了一些新功能，具体内容如下
 
-## Features
+## 添加/修改内容介绍
 
-- __L7 Proxy__
+* 参照 [Gaea-cc](https://github.com/XiaoMi/Gaea/blob/master/docs/gaea-cc.md) 的实现方式实现了weir-cc，目前有list、detail、modify、delete四个功能
 
-Weir provides application layer proxy for MySQL Protocol, and it is compatible with TiDB 4.0.
+* weir的admin端添加了ping接口
 
-- __Connection Management__
+* 修改了configCenter为etcd时的代码逻辑（之前的有点混乱）
 
-Weir uses connection pool for backend connection management, and supports load balancing.
+  > 讲下修改后的逻辑：
+  >
+  > 现在etcd的BasePath为"weir"，BasePath下有“proxy”和“namespace”两个分支，分别存储某集群中的所有weir节点信息和namespace租户信息
+  >
+  > 例如，我的"default"集群下只有一个weir节点，我将它命名为"weir1"，里面只有"test_namespace"这一个租户，那么它们在etcd中的存储路径就是 "[addr]/weir/proxy/default/weir1" 和 "[addr]/weir/namespace/default/test_namespace"
+  >
+  > 
+  >
+  > 另外，为了在etcd中存储namespace信息，我添加了namespace的json标签以及解析
 
-- __Multi-tenant Management__
+* 实现了IP黑名单（测试weir的时候发现这个功能虽然在配置文件里，但是没有具体实现）
 
-Weir supports multi-tenant management. All the namespaces can be dynamic reloaded in runtime.
+  > 模仿IsDatabaseAllowed函数写的，在driver和namespace文件夹下的各处添加了声明，最终选择在proxy/driver/queryctx.go+253的Auth()函数中进行调用
 
-- __Fault Tolerance__
+* 以及修复了一些bug，详细内容请见[Weir中发现的问题](cj/weir_problems.md)
 
-Weir supports rate limiting and circuit breaking to protect both clients and TiDB servers.
-
-## Architecture
-
-There are three core components in Weir platform: proxy, controller and UI dashboard.
-
-<img src="docs/en/assets/weir-architecture.png" style="zoom:80%;" />
-
-## Roadmap
-
-- Web Application Firewall (WAF) for SQL
-- Database Mesh for TiDB
-- SQL audit
-
-## Code of Conduct
-
-This project is for everyone. We ask that our users and contributors take a few minutes to review our [Code of Conduct](code-of-conduct.md).
-
-## License
-
-Weir is under the Apache 2.0 license. See the [LICENSE](./LICENSE) file for details.

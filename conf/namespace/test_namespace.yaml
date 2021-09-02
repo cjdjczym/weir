@@ -3,23 +3,19 @@ namespace: "test_namespace"
 frontend:
   allowed_dbs:
     - "test_weir_db"
+    - "test"
   slow_sql_time: 50
   sql_blacklist:
-    - sql: "select * from tbl0"
-    - sql: "select * from tbl1"
   sql_whitelist:
-    - sql: "select * from tbl2"
-    - sql: "select * from tbl3"
   denied_ips:
   idle_timeout: 3600
   users:
     - username: "hello"
       password: "world"
-    - username: "hello1"
-      password: "world1"
 backend:
   instances:
-    - "127.0.0.1:4000"
+    - "10.38.161.47:4000"
+    - "10.38.161.47:4001"
   username: "root"
   password: ""
   selector_type: "random"

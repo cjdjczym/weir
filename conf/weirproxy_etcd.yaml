@@ -21,10 +21,10 @@ config_center:
   type: "etcd"
   config_etcd:
     addrs:
-    - "10.38.161.47:2379"
+    - "10.38.161.47:2378"
     base_path: "weir"
-    username: ""
-    password: ""
+    username: "root"
+    password: "root"
     strict_parse: false
 performance:
   tcp_keep_alive: true

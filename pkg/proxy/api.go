@@ -31,8 +31,6 @@ type HttpApiServer struct {
 	engine *gin.Engine
 }
 
-// TODO cj add cluster field
-
 type NamespaceHttpHandler struct {
 	nsmgr     *namespace.NamespaceManager
 	cfgCenter configcenter.ConfigCenter
@@ -72,7 +70,7 @@ func CreateHttpApiServer(proxyServer *server.Server, nsmgr *namespace.NamespaceM
 	engine := gin.New()
 	engine.Use(gin.Recovery())
 
-	namespaceRouteGroup := engine.Group("/admin/namespace")
+	namespaceRouteGroup := engine.Group("/namespace")
 	apiServer.wrapBasicAuthGinMiddleware(namespaceRouteGroup)
 	namespaceHttpHandler := NewNamespaceHttpHandler(apiServer.nsmgr, apiServer.cfgCenter, cfg.Cluster)
 	namespaceHttpHandler.AddHandlersToRouteGroup(namespaceRouteGroup)
@@ -131,11 +129,10 @@ func (h *HttpApiServer) Close() {
 	close(h.closeCh)
 }
 
-// TODO cj add PING
 func (n *NamespaceHttpHandler) AddHandlersToRouteGroup(group *gin.RouterGroup) {
-	group.POST("/remove/:namespace", n.HandleRemoveNamespace)
-	group.POST("/reload/prepare/:namespace", n.HandlePrepareReload)
-	group.POST("/reload/commit/:namespace", n.HandleCommitReload)
+	group.PUT("/remove/:namespace", n.HandleRemoveNamespace)
+	group.PUT("/reload/prepare/:namespace", n.HandlePrepareReload)
+	group.PUT("/reload/commit/:namespace", n.HandleCommitReload)
 	group.GET("/ping", n.ping)
 }
 

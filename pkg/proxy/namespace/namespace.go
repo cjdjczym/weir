@@ -81,7 +81,6 @@ func (n *NamespaceWrapper) IsAllowedSQL(sqlFeature uint32) bool {
 	return n.mustGetCurrentNamespace().IsAllowedSQL(sqlFeature)
 }
 
-// IsDeniedHost TODO cj feat[host]
 func (n *NamespaceWrapper) IsDeniedHost(host string) bool {
 	return n.mustGetCurrentNamespace().IsDeniedHost(host)
 }

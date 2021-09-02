@@ -19,8 +19,6 @@ const (
 	DefaultEtcdDialTimeout = 3 * time.Second
 )
 
-// TODO cj fix 以下皆有一定修改
-
 type EtcdConfigCenter struct {
 	etcdClient  *clientv3.Client
 	kv          clientv3.KV

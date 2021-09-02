@@ -15,7 +15,6 @@ package server
 
 import (
 	"context"
-	"encoding/hex"
 	"io"
 	"runtime/pprof"
 	"strings"
@@ -146,10 +145,6 @@ func (cc *clientConn) useDB(ctx context.Context, db string) (err error) {
 // Query `load stats` does not return result either.
 func (cc *clientConn) handleQuery(ctx context.Context, sql string) (err error) {
 	rss, err := cc.ctx.Execute(ctx, sql)
-
-	if rss != nil && rss.Resultset != nil && rss.Resultset.RawPkg != nil{
-		println(hex.EncodeToString(rss.Resultset.RawPkg))
-	}
 
 	if err != nil {
 		metrics.ExecuteErrorCounter.WithLabelValues(metrics.ExecuteErrorToLabel(err)).Inc()

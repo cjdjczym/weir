@@ -16,7 +16,6 @@ type FrontendNamespace struct {
 	userPasswd   map[string]string
 	sqlBlacklist map[uint32]SQLInfo
 	sqlWhitelist map[uint32]SQLInfo
-	// TODO cj feat[host]
 	deniedHostSet map[string]struct{}
 }
 
@@ -50,7 +49,6 @@ func (n *FrontendNamespace) IsAllowedSQL(sqlFeature uint32) bool {
 	return ok
 }
 
-// IsDeniedHost TODO cj feat[host]
 func (n *FrontendNamespace) IsDeniedHost(host string) bool {
 	_, ok := n.deniedHostSet[host]
 	return ok

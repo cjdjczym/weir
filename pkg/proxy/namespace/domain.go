@@ -13,7 +13,6 @@ type Namespace interface {
 	ListDatabases() []string
 	IsDeniedSQL(sqlFeature uint32) bool
 	IsAllowedSQL(sqlFeature uint32) bool
-	// IsDeniedHost TODO cj feat[host]
 	IsDeniedHost(host string) bool
 	GetPooledConn(context.Context) (driver.PooledBackendConn, error)
 	Close()
@@ -27,7 +26,6 @@ type Frontend interface {
 	ListDatabases() []string
 	IsDeniedSQL(sqlFeature uint32) bool
 	IsAllowedSQL(sqlFeature uint32) bool
-	// IsDeniedHost TODO cj feat[host]
 	IsDeniedHost(host string) bool
 }
 

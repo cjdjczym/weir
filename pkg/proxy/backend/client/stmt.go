@@ -236,7 +236,6 @@ func (c *Conn) StmtExecuteForward(data []byte) (*Result, error) {
 	writeData = append(writeData, data...)
 	c.ResetSequence()
 
-	// TODO cj fix(replace 'data' with 'writeData')
 	if err := c.WritePacket(writeData); err != nil {
 		return nil, errors.Trace(err)
 	}

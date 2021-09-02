@@ -82,8 +82,6 @@ func BuildFrontend(cfg *config.FrontendNamespace) (Frontend, error) {
 		allowedDBs: cfg.AllowedDBs,
 	}
 	fns.allowedDBSet = datastructure.StringSliceToSet(cfg.AllowedDBs)
-
-	// TODO cj feat[host]
 	fns.deniedHostSet = datastructure.StringSliceToSet(cfg.DeniedIPs)
 
 	userPasswds := make(map[string]string)

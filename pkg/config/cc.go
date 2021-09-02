@@ -25,7 +25,7 @@ type CCAdminServer struct {
 
 // ProxyMonitorMetric proxy register information
 type ProxyMonitorMetric struct {
-	Token     string `json:"token"` //目前同AdminAddr
+	Token     string `json:"token"` //目前同"[IP]:[AdminPort]"
 	StartTime string `json:"start_time"`
 
 	IP        string `json:"ip"`

@@ -121,10 +121,6 @@ func (cc *clientConn) Run(ctx context.Context) {
 			logutil.Logger(ctx).Error("connection running loop panic",
 				zap.Stringer("lastSQL", getLastStmtInConn{cc}),
 				zap.String("err", fmt.Sprintf("%v", r)))
-			// TODO cj log
-			println("============stack by cjdj============")
-			println(string(buf))
-			println("=====================================")
 			err := cc.writeError(errors.New(fmt.Sprintf("%v", r)))
 			terror.Log(err)
 			metrics.PanicCounter.WithLabelValues(metrics.LabelSession).Inc()

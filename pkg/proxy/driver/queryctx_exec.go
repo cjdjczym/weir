@@ -170,7 +170,6 @@ func (q *QueryCtxImpl) setVariable(ctx context.Context, stmt *ast.SetStmt) error
 	var autoCommitVar *ast.VariableAssignment
 	var sysVars []*ast.VariableAssignment
 
-	// TODO cj fix(取消default注释)
 	for _, v := range stmt.Variables {
 		switch strings.ToLower(v.Name) {
 		case variable.AutoCommit:

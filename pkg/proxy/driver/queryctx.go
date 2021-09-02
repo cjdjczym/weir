@@ -135,7 +135,6 @@ func (q *QueryCtxImpl) Execute(ctx context.Context, sql string) (*gomysql.Result
 
 	if rateLimitKey, ok := q.getRateLimiterKey(ctx, q.ns.GetRateLimiter()); ok && rateLimitKey != "" {
 		if err := q.ns.GetRateLimiter().Limit(ctx, rateLimitKey); err != nil {
-			// TODO cj feat[log for limiter]
 			return nil, err
 		}
 	}
@@ -251,7 +250,6 @@ func (q *QueryCtxImpl) Close() error {
 
 func (q *QueryCtxImpl) Auth(user *auth.UserIdentity, pwd []byte, salt []byte) bool {
 	ns, ok := q.nsmgr.Auth(user.Username, pwd, salt)
-	// TODO cj feat[host]
 	if !ok || ns.IsDeniedHost(user.Hostname){
 		return false
 	}

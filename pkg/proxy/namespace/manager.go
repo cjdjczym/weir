@@ -62,7 +62,6 @@ func (n *NamespaceManager) Auth(username string, pwd, salt []byte) (driver.Names
 		name:  nsName,
 	}
 
-	// TODO cj fix(add Auth judge here)
 	return wrapper, wrapper.mustGetCurrentNamespace().Auth(username, pwd, salt)
 }
 
